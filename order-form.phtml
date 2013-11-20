@@ -1,0 +1,92 @@
+<?php 
+$map = Mage::registry('teeth_map');
+
+?>
+
+<div class="page-title">
+    <h1>
+        <?php echo ucfirst($this->getOptionText('manufacturer', $this->getOptionId())) ?>
+        <?php echo $this->getCategory()->getName()?>
+        <?php echo $this->__('Quick Form')?>
+    </h1>
+</div>
+<?php if( !$userIsloggedIn ):?>
+<div class="order-notice">
+    <a href="<?php echo $this->getUrl('customer/account');?>"><?php echo $this->__('Notice: You must have an account before using this quick order form. Login or create an account now. ')?></a>
+</div>
+<?php endif;?>
+<?php echo $this->getMessagesBlock()->getGroupedHtml() ?>
+
+<script>
+function checkQuickForm() {
+	var qty = 0;
+	$$('.quick-order-qty').each(function(el){
+		qty += 1 * $F(el);
+	});
+	if (qty<1) {
+		alert('please input qty');
+		return false;
+	}
+	return true;
+}
+function checkQuickFormLogin(){
+    alert('Please log in first');
+    return;
+}
+</script>
+<?php $userIsloggedIn = Mage::getSingleton('customer/session')->isLoggedIn(); ?>
+<?php if( $userIsloggedIn ):?>
+    <form action="<?php echo $this->getUrl('teeth/form/add')?>" method="post" onsubmit="return checkQuickForm(this)">
+<?php else:?>
+    <form  method="post" onsubmit="return checkQuickFormLogin(this)">
+ <?php endif;?>
+<div class="clearer">
+    <input type="hidden" name="m" value="<?php echo $this->getOptionId()?>" />
+    <button type="submit" class="button f-right"><span><span><?php echo $this->__('Quick Order ')?></span></span></button>
+
+</div>
+
+<?php foreach ($map as $grid):?>
+<div class="quick-order-form">
+    <h3>
+        <?php echo ucfirst($this->getOptionText('teeth_brand', $grid['teeth_brand']))?>,
+        
+        <?php if($grid['teeth_anterior_type']):?>
+            <?php echo ucfirst($this->getOptionText('teeth_anterior_type', $grid['teeth_anterior_type']))?>
+        <?php endif;?>
+        <?php if($grid['teeth_posterior_type']):?>
+            <?php echo ucfirst($this->getOptionText('teeth_posterior_type', $grid['teeth_posterior_type']))?>
+        <?php endif;?>
+        
+        <?php echo ucfirst($this->getOptionText('teeth_type', $grid['teeth_type']))?>
+    </h3>
+    <table cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="label"></td>
+            <?php foreach ($grid['colors'] as $color):?>
+            <td class="label"><?php echo $this->getOptionText('teeth_color', $color)?></td>
+            <?php endforeach;?>
+        </tr>
+        
+        <?php foreach ($grid['items'] as $model => $items):?>
+            <tr>
+                <td class="label">
+                    <?php echo $this->getOptionText('teeth_model', $model)?>
+                </td>
+                <?php foreach ($grid['colors'] as $color):?>
+                <?php if (isset($items[$color])):?>
+                    <td class="value">
+                        <input type="text" name="qtys[<?php echo $items[$color]->getId()?>]" value="" 
+                            class="input-text quick-order-qty" title="<?php echo $this->escapeHtml($items[$color]->getName())?>" />
+                    </td>
+                <?php else:?>
+                    <td class="value empty"></td>
+                <?php endif;?>
+                <?php endforeach;?>
+            </tr>
+        <?php endforeach;?>
+    </table>
+</div>
+<?php endforeach;?>
+
+</form>
